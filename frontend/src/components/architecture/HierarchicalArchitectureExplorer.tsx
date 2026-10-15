@@ -36,9 +36,9 @@ interface HierarchicalArchitectureExplorerProps {
 
 // Layer color mapping
 const LAYER_COLORS: Record<string, string> = {
-  presentation: '#3b82f6', // Blue
-  frontend: '#3b82f6',
-  api: '#7c3aed', // Purple
+  presentation: '#e8643a', // Blue
+  frontend: '#e8643a',
+  api: '#e8643a', // Purple
   business: '#10b981', // Green
   service: '#10b981',
   data: '#f59e0b', // Orange
@@ -59,7 +59,7 @@ const SystemNode = ({ data }: any) => {
     <div
       className="px-8 py-6 rounded-xl shadow-lg cursor-pointer transition-all hover:shadow-xl"
       style={{
-        background: '#1a1f2e',
+        background: '#191917',
         border: `3px solid ${data.color}`,
         minWidth: '200px',
         minHeight: '90px',
@@ -87,7 +87,7 @@ const DetailNode = ({ data }: any) => {
     <div
       className="px-5 py-4 rounded-lg shadow cursor-pointer transition-all hover:shadow-md"
       style={{
-        background: '#1a1f2e',
+        background: '#191917',
         border: `2px solid ${data.color}`,
         minWidth: '180px',
       }}
@@ -162,9 +162,6 @@ function HierarchicalArchitectureExplorerInner({
 
   // Debug logging
   useEffect(() => {
-    console.log('HierarchicalArchitectureExplorer - layers:', layers)
-    console.log('HierarchicalArchitectureExplorer - layers length:', layers?.length)
-    console.log('Expanded nodes:', Array.from(expandedNodes))
   }, [layers, expandedNodes])
 
   // Generate nodes and edges based on expanded state
@@ -306,9 +303,6 @@ function HierarchicalArchitectureExplorerInner({
   // Update graph when expansion state changes
   useEffect(() => {
     const { nodes: newNodes, edges: newEdges } = generateGraphData()
-    console.log('Generated nodes:', newNodes.length)
-    console.log('Generated edges:', newEdges.length)
-    console.log('Edge details:', newEdges)
     setNodes(newNodes)
     setEdges(newEdges)
   }, [generateGraphData, setNodes, setEdges])
@@ -408,7 +402,7 @@ function HierarchicalArchitectureExplorerInner({
       {/* Breadcrumb Navigation */}
       <div
         className="absolute top-4 left-4 z-10 flex items-center space-x-2 px-4 py-2 rounded-full shadow-lg"
-        style={{ background: '#1a1f2e', border: '1px solid #374151' }}
+        style={{ background: '#191917', border: '1px solid #2e2d29' }}
       >
         {breadcrumbs.map((crumb, index) => (
           <div key={index} className="flex items-center">
@@ -431,17 +425,17 @@ function HierarchicalArchitectureExplorerInner({
       {/* Graph Controls */}
       <button
         onClick={handleResetView}
-        className="absolute top-4 right-4 z-10 px-4 py-2 text-xs font-medium text-white rounded-full transition-all backdrop-blur-md"
+        className="absolute top-4 right-4 z-10 px-4 py-2 text-xs font-medium text-white rounded transition-all"
         style={{ 
-          background: 'rgba(59, 130, 246, 0.2)',
-          border: '1px solid rgba(59, 130, 246, 0.3)',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          background: 'rgba(232, 100, 58, 0.2)',
+          border: '1px solid rgba(232, 100, 58, 0.3)',
+          
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(59, 130, 246, 0.3)'
+          e.currentTarget.style.background = 'rgba(232, 100, 58, 0.3)'
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)'
+          e.currentTarget.style.background = 'rgba(232, 100, 58, 0.2)'
         }}
         title="Reset to System View"
       >
@@ -458,13 +452,13 @@ function HierarchicalArchitectureExplorerInner({
         nodeTypes={nodeTypes}
         fitView
         attributionPosition="bottom-left"
-        style={{ background: '#0a0c12' }}
+        style={{ background: '#121210' }}
       >
-        <Background color="#1a1f2e" gap={16} />
+        <Background color="#191917" gap={16} />
         <Controls
           style={{
-            background: '#1a1f2e',
-            border: '1px solid #374151',
+            background: '#191917',
+            border: '1px solid #2e2d29',
             borderRadius: '8px',
           }}
         />
@@ -474,7 +468,7 @@ function HierarchicalArchitectureExplorerInner({
       {expandedNodes.size === 0 && (
         <div
           className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg"
-          style={{ background: '#1a1f2e', border: '1px solid #374151' }}
+          style={{ background: '#191917', border: '1px solid #2e2d29' }}
         >
           <p className="text-xs text-gray-400">
             Click on a layer to expand and see its components

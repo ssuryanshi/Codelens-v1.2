@@ -11,7 +11,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Configuration
-API_ENDPOINT="https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod"
+API_ENDPOINT="https://<API_ID>.execute-api.us-east-1.amazonaws.com/Prod"
 REPOS_TABLE="BloomWay-Repositories"
 TEST_REPO="https://github.com/octocat/Hello-World"
 REPO_ID=""

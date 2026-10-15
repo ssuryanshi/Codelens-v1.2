@@ -78,10 +78,10 @@ export function InteractiveGraph({ nodes, edges, onNodeClick, width = 800, heigh
     switch (type?.toLowerCase()) {
       case 'presentation':
       case 'frontend':
-        return '#3b82f6' // blue
+        return '#e8643a' // blue
       case 'api':
       case 'controller':
-        return '#8b5cf6' // purple
+        return '#e8643a' // purple
       case 'business':
       case 'service':
         return '#10b981' // green
@@ -107,11 +107,11 @@ export function InteractiveGraph({ nodes, edges, onNodeClick, width = 800, heigh
         <button
           onClick={resetView}
           className="px-3 py-2 rounded text-sm font-medium transition-all"
-          style={{ background: '#1a1f2e', color: '#e5e7eb' }}
+          style={{ background: '#191917', color: '#e5e7eb' }}
         >
           Reset View
         </button>
-        <div className="px-3 py-2 rounded text-xs" style={{ background: '#1a1f2e', color: '#9ca3af' }}>
+        <div className="px-3 py-2 rounded text-xs" style={{ background: '#191917', color: '#9ca3af' }}>
           Zoom: {(transform.scale * 100).toFixed(0)}%
         </div>
       </div>
@@ -126,7 +126,7 @@ export function InteractiveGraph({ nodes, edges, onNodeClick, width = 800, heigh
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        style={{ cursor: isDragging ? 'grabbing' : 'grab', background: '#0a0c12' }}
+        style={{ cursor: isDragging ? 'grabbing' : 'grab', background: '#121210' }}
       >
         <g transform={`translate(${transform.x}, ${transform.y}) scale(${transform.scale})`}>
           {/* Edges */}
@@ -142,7 +142,7 @@ export function InteractiveGraph({ nodes, edges, onNodeClick, width = 800, heigh
                   y1={sourceNode.y}
                   x2={targetNode.x}
                   y2={targetNode.y}
-                  stroke="#374151"
+                  stroke="#2e2d29"
                   strokeWidth="2"
                   markerEnd="url(#arrowhead)"
                 />
@@ -208,18 +208,18 @@ export function InteractiveGraph({ nodes, edges, onNodeClick, width = 800, heigh
             orient="auto"
             markerUnits="strokeWidth"
           >
-            <path d="M0,0 L0,6 L9,3 z" fill="#374151" />
+            <path d="M0,0 L0,6 L9,3 z" fill="#2e2d29" />
           </marker>
         </defs>
       </svg>
 
       {/* Legend */}
-      <div className="absolute bottom-4 left-4 rounded p-3" style={{ background: '#1a1f2e' }}>
+      <div className="absolute bottom-4 left-4 rounded p-3" style={{ background: '#191917' }}>
         <div className="text-xs font-medium text-gray-400 mb-2">Layer Types</div>
         <div className="space-y-1">
           {[
-            { type: 'Frontend', color: '#3b82f6' },
-            { type: 'API', color: '#8b5cf6' },
+            { type: 'Frontend', color: '#e8643a' },
+            { type: 'API', color: '#e8643a' },
             { type: 'Business', color: '#10b981' },
             { type: 'Data', color: '#f59e0b' },
             { type: 'Infrastructure', color: '#ef4444' }
@@ -233,7 +233,7 @@ export function InteractiveGraph({ nodes, edges, onNodeClick, width = 800, heigh
       </div>
 
       {/* Instructions */}
-      <div className="absolute top-4 left-4 rounded p-3 text-xs text-gray-400" style={{ background: '#1a1f2e' }}>
+      <div className="absolute top-4 left-4 rounded p-3 text-xs text-gray-400" style={{ background: '#191917' }}>
         <div>🖱️ Drag to pan</div>
         <div>🔍 Scroll to zoom</div>
         <div>👆 Click nodes for details</div>

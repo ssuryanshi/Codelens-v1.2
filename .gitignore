@@ -10,3 +10,13 @@ build/
 .env
 __pycache__/
 *.pyc
+
+# SAM / CloudFormation build output and local deploy config
+.aws-sam/
+**/.aws-sam/
+samconfig.toml
+*.toml.save
+
+# env files (keep the example)
+.env.*
+!.env.example

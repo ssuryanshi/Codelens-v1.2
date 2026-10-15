@@ -49,14 +49,11 @@ export function useDocumentation({
   const { data: statusData, isLoading } = useQuery({
     queryKey: ['documentation', repoId, 'status'],
     queryFn: async () => {
-      console.log('[useDocumentation] Fetching status for repo:', repoId)
       const response = await getDocumentationStatus(repoId)
-      console.log('[useDocumentation] Status response:', response.data)
       
       // Check for timeout (if generating for more than 5 minutes)
       if (response.data.state === 'generating' && generationStartTime) {
         const elapsedSeconds = (Date.now() - generationStartTime) / 1000
-        console.log('[useDocumentation] Generation time elapsed:', elapsedSeconds, 'seconds')
         
         if (elapsedSeconds > 300) { // 5 minutes
           console.error('[useDocumentation] Generation timeout detected')
@@ -72,7 +69,6 @@ export function useDocumentation({
       // Poll every 2 seconds while generating
       const data = query.state.data as DocumentationStatusResponse | undefined
       const shouldPoll = data?.state === 'generating'
-      console.log('[useDocumentation] Refetch interval check - state:', data?.state, 'shouldPoll:', shouldPoll)
       return shouldPoll ? 2000 : false
     },
     staleTime: 30000, // Consider data stale after 30 seconds
@@ -81,15 +77,9 @@ export function useDocumentation({
   // Generate mutation
   const generateMutation = useMutation({
     mutationFn: async () => {
-      console.log('[useDocumentation] ===== GENERATE MUTATION CALLED =====')
-      console.log('[useDocumentation] Starting generation for repo:', repoId)
-      console.log('[useDocumentation] API call about to be made...')
       
       try {
         const response = await generateDocumentation(repoId)
-        console.log('[useDocumentation] ===== GENERATE API SUCCESS =====')
-        console.log('[useDocumentation] Generation response:', response.data)
-        console.log('[useDocumentation] Response status:', response.status)
         return response.data
       } catch (err) {
         console.error('[useDocumentation] ===== GENERATE API FAILED =====')
@@ -97,10 +87,7 @@ export function useDocumentation({
         throw err
       }
     },
-    onSuccess: (data) => {
-      console.log('[useDocumentation] ===== ON SUCCESS CALLED =====')
-      console.log('[useDocumentation] Success data:', data)
-      console.log('[useDocumentation] Generation started successfully, invalidating status query')
+    onSuccess: () => {
       // Record start time for timeout tracking
       setGenerationStartTime(Date.now())
       // Invalidate status query to trigger refetch
@@ -131,11 +118,8 @@ export function useDocumentation({
     setExportError(null)
     try {
       const url = getDocumentationExportUrl(repoId, 'md')
-      console.log('Exporting markdown from:', url)
       
       const response = await fetch(url)
-      console.log('Export response status:', response.status)
-      console.log('Export response headers:', Object.fromEntries(response.headers.entries()))
       
       if (!response.ok) {
         const errorText = await response.text()
@@ -151,7 +135,6 @@ export function useDocumentation({
       }
       
       const blob = await response.blob()
-      console.log('Blob created, size:', blob.size, 'type:', blob.type)
       
       const downloadUrl = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
@@ -162,7 +145,6 @@ export function useDocumentation({
       document.body.removeChild(link)
       window.URL.revokeObjectURL(downloadUrl)
       
-      console.log('Markdown export completed successfully')
     } catch (error) {
       console.error('Markdown export failed:', error)
       setExportError(error instanceof Error ? error.message : 'Failed to export documentation')
@@ -174,11 +156,8 @@ export function useDocumentation({
     setExportError(null)
     try {
       const url = getDocumentationExportUrl(repoId, 'pdf')
-      console.log('Exporting PDF from:', url)
       
       const response = await fetch(url)
-      console.log('Export response status:', response.status)
-      console.log('Export response headers:', Object.fromEntries(response.headers.entries()))
       
       if (!response.ok) {
         const errorText = await response.text()
@@ -195,13 +174,11 @@ export function useDocumentation({
       
       // Get response as text first to check if it's base64
       const responseText = await response.text()
-      console.log('Response text preview:', responseText.substring(0, 100))
       
       let blob: Blob
       
       // Check if response is base64-encoded (starts with base64 PDF signature)
       if (responseText.startsWith('JVBERi')) {
-        console.log('Detected base64-encoded PDF, decoding...')
         // Decode base64 to binary
         const binaryString = atob(responseText)
         const bytes = new Uint8Array(binaryString.length)
@@ -211,11 +188,9 @@ export function useDocumentation({
         blob = new Blob([bytes], { type: 'application/pdf' })
       } else {
         // Already binary, use as-is
-        console.log('PDF is already binary')
         blob = new Blob([responseText], { type: 'application/pdf' })
       }
       
-      console.log('Blob created, size:', blob.size, 'type:', blob.type)
       
       const downloadUrl = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
@@ -226,7 +201,6 @@ export function useDocumentation({
       document.body.removeChild(link)
       window.URL.revokeObjectURL(downloadUrl)
       
-      console.log('PDF export completed successfully')
     } catch (error) {
       console.error('PDF export failed:', error)
       setExportError(error instanceof Error ? error.message : 'Failed to export documentation')
@@ -247,7 +221,6 @@ export function useDocumentation({
     
     // Generation
     generate: () => {
-      console.log('[useDocumentation] Generate called, current status:', statusData?.state)
       generateMutation.mutate()
     },
     isGenerating: generateMutation.isPending,

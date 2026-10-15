@@ -29,7 +29,5 @@ const mockLayers = [
 ]
 
 // Test component rendering
-console.log('Mock layers:', mockLayers)
-console.log('Component should render with', mockLayers.length, 'layers')
 
 export { mockLayers }

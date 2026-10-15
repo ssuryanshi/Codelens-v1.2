@@ -1,8 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios'
+import { API_BASE_URL } from '../config'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod'
 
-console.log('API_BASE_URL:', API_BASE_URL)
 
 // Create axios instance with default config
 export const apiClient: AxiosInstance = axios.create({
@@ -16,7 +15,6 @@ export const apiClient: AxiosInstance = axios.create({
 // Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    console.log('API Request:', config.method?.toUpperCase(), config.url, config.baseURL)
     return config
   },
   (error) => {
@@ -416,7 +414,6 @@ export interface DocumentationGenerateResponse {
 
 // API functions
 export const ingestRepository = (data: IngestRequest): Promise<AxiosResponse<IngestResponse>> => {
-  console.log('ingestRepository called with:', { source_type: data.source_type, has_file: !!data.file })
 
   if (data.source_type === 'zip' && data.file) {
     const formData = new FormData()
@@ -426,7 +423,6 @@ export const ingestRepository = (data: IngestRequest): Promise<AxiosResponse<Ing
       formData.append('auth_token', data.auth_token)
     }
 
-    console.log('Making ZIP upload request to:', `${API_BASE_URL}/repos/ingest`)
 
     // Use a separate axios instance for FormData to avoid Content-Type conflicts
     return axios.post(`${API_BASE_URL}/repos/ingest`, formData, {
@@ -438,7 +434,6 @@ export const ingestRepository = (data: IngestRequest): Promise<AxiosResponse<Ing
   }
 
   if (data.source_type === 'github') {
-    console.log('Making GitHub URL request')
     return apiClient.post('/repos/ingest', {
       source_type: 'github',
       source: data.source,
@@ -450,7 +445,6 @@ export const ingestRepository = (data: IngestRequest): Promise<AxiosResponse<Ing
 }
 
 export const ingestRepositoryAsync = (data: IngestRequest): Promise<AxiosResponse<AsyncIngestResponse>> => {
-  console.log('ingestRepositoryAsync called with:', { source_type: data.source_type, has_file: !!data.file })
 
   if (data.source_type === 'zip' && data.file) {
     const formData = new FormData()
@@ -460,7 +454,6 @@ export const ingestRepositoryAsync = (data: IngestRequest): Promise<AxiosRespons
       formData.append('auth_token', data.auth_token)
     }
 
-    console.log('Making async ZIP upload request to:', `${API_BASE_URL}/repos/ingest`)
 
     return axios.post(`${API_BASE_URL}/repos/ingest`, formData, {
       timeout: 10000, // Async endpoint should respond quickly
@@ -471,7 +464,6 @@ export const ingestRepositoryAsync = (data: IngestRequest): Promise<AxiosRespons
   }
 
   if (data.source_type === 'github') {
-    console.log('Making async GitHub URL request')
     return apiClient.post('/repos/ingest', {
       source_type: 'github',
       source: data.source,

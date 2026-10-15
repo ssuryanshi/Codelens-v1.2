@@ -56,15 +56,10 @@ export function ExportDropdown({ onExportMarkdown, onExportPdf }: ExportDropdown
       {isOpen && (
         <div 
           className="
-            absolute right-0 mt-2 w-56 rounded-2xl shadow-2xl
-            backdrop-blur-xl bg-white/80 dark:bg-gray-900/80
-            border border-white/20 dark:border-gray-700/30
+            absolute right-0 mt-2 w-56 rounded shadow-xl
+             bg-raised border border-line
             z-50
           "
-          style={{
-            backdropFilter: 'blur(16px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-          }}
         >
           <div className="py-2">
             {/* Markdown Option */}

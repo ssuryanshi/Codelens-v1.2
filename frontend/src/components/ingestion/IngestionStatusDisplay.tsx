@@ -25,7 +25,6 @@ export function IngestionStatusDisplay({ jobId, onRetry }: IngestionStatusDispla
   const { status, error, retryCount } = useIngestionStatus({
     jobId,
     onCompleted: (completedStatus) => {
-      console.log('Ingestion completed:', completedStatus)
       // Navigate to repository dashboard after a short delay
       setTimeout(() => {
         if (completedStatus.repo_id) {
@@ -55,35 +54,28 @@ export function IngestionStatusDisplay({ jobId, onRetry }: IngestionStatusDispla
     
     return (
       <div className="relative z-10 text-center px-8 py-10" style={{
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.06)',
-        borderRadius: '16px',
+        background: '#191917',
+        border: '1px solid #2e2d29',
+        borderRadius: '6px',
         width: '520px',
         maxWidth: '90vw',
         margin: '0 auto'
       }}>
         {/* Spinner with subtle glow */}
         <div className="mb-6 relative inline-block">
-          {/* Subtle glow behind spinner */}
-          <div
-            className="absolute inset-0 rounded-full blur-xl"
-            style={{
-              background: 'radial-gradient(circle, rgba(59,130,246,0.15), transparent 60%)',
-            }}
-          />
           {/* Improved spinner with gradient */}
           <div
             className="relative w-12 h-12 rounded-full"
             style={{
               border: '3px solid rgba(255,255,255,0.1)',
-              borderTopColor: '#3b82f6',
+              borderTopColor: '#e8643a',
               animation: 'spin 1s linear infinite',
             }}
           />
         </div>
 
         {/* Title - Larger and more specific */}
-        <h2 className="text-[30px] font-semibold text-white mb-2 leading-tight">
+        <h2 className="font-display text-[34px] text-bone mb-2 leading-tight">
           Analyzing repository architecture
         </h2>
 
@@ -94,14 +86,14 @@ export function IngestionStatusDisplay({ jobId, onRetry }: IngestionStatusDispla
 
         {/* Progress bar with animated progress */}
         <div
-          className="w-full rounded-full h-1.5 mb-6 overflow-hidden"
-          style={{ background: '#1f2937' }}
+          className="w-full rounded-sm h-1 mb-6 overflow-hidden"
+          style={{ background: '#2e2d29' }}
         >
           <div
-            className="h-full rounded-full transition-all duration-300 ease-out"
+            className="h-full transition-all duration-300 ease-out"
             style={{
               width: `${percentage}%`,
-              background: 'linear-gradient(90deg, #3b82f6, #6366f1)',
+              background: '#e8643a',
             }}
           />
         </div>
@@ -190,35 +182,28 @@ export function IngestionStatusDisplay({ jobId, onRetry }: IngestionStatusDispla
     
     return (
       <div className="relative z-10 text-center px-8 py-10" style={{
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.06)',
-        borderRadius: '16px',
+        background: '#191917',
+        border: '1px solid #2e2d29',
+        borderRadius: '6px',
         width: '520px',
         maxWidth: '90vw',
         margin: '0 auto'
       }}>
         {/* Spinner with subtle glow */}
         <div className="mb-6 relative inline-block">
-          {/* Subtle glow behind spinner */}
-          <div
-            className="absolute inset-0 rounded-full blur-xl"
-            style={{
-              background: 'radial-gradient(circle, rgba(59,130,246,0.15), transparent 60%)',
-            }}
-          />
           {/* Improved spinner with gradient */}
           <div
             className="relative w-12 h-12 rounded-full"
             style={{
               border: '3px solid rgba(255,255,255,0.1)',
-              borderTopColor: '#3b82f6',
+              borderTopColor: '#e8643a',
               animation: 'spin 1s linear infinite',
             }}
           />
         </div>
 
         {/* Title - Larger and more specific */}
-        <h2 className="text-[30px] font-semibold text-white mb-2 leading-tight">
+        <h2 className="font-display text-[34px] text-bone mb-2 leading-tight">
           Analyzing repository architecture
         </h2>
 
@@ -229,14 +214,14 @@ export function IngestionStatusDisplay({ jobId, onRetry }: IngestionStatusDispla
 
         {/* Progress bar at 100% */}
         <div
-          className="w-full rounded-full h-1.5 mb-6 overflow-hidden"
-          style={{ background: '#1f2937' }}
+          className="w-full rounded-sm h-1 mb-6 overflow-hidden"
+          style={{ background: '#2e2d29' }}
         >
           <div
             className="h-full rounded-full"
             style={{
               width: '100%',
-              background: 'linear-gradient(90deg, #3b82f6, #6366f1)',
+              background: '#e8643a',
             }}
           />
         </div>
@@ -285,12 +270,6 @@ export function IngestionStatusDisplay({ jobId, onRetry }: IngestionStatusDispla
         margin: '0 auto'
       }}>
         <div className="mb-6 relative inline-block">
-          <div
-            className="absolute inset-0 rounded-full blur-xl"
-            style={{
-              background: 'radial-gradient(circle, rgba(239,68,68,0.15), transparent 60%)',
-            }}
-          />
           <div className="relative w-12 h-12 rounded-full flex items-center justify-center bg-red-500/10">
             <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
@@ -298,7 +277,7 @@ export function IngestionStatusDisplay({ jobId, onRetry }: IngestionStatusDispla
           </div>
         </div>
           
-        <h2 className="text-[30px] font-semibold text-white mb-2 leading-tight">
+        <h2 className="font-display text-[34px] text-bone mb-2 leading-tight">
           Indexing Failed
         </h2>
           

@@ -33,6 +33,13 @@ Resources:
       BinaryMediaTypes:
         - 'multipart/form-data'
         - 'application/pdf'
+      # Every request can trigger Bedrock calls, so cap the request rate.
+      # Cheap insurance against a leaked URL burning through the account.
+      MethodSettings:
+        - HttpMethod: '*'
+          ResourcePath: '/*'
+          ThrottlingRateLimit: 5
+          ThrottlingBurstLimit: 10
       Cors:
         AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"

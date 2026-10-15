@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AppProvider } from './context/AppContext'
 import { RepoInputPage } from './pages/RepoInputPage'
-import { RepoExplorerPagePremium } from './pages/RepoExplorerPage_Premium'
+import { RepoExplorerPage } from './pages/RepoExplorerPage'
 import { ArchitecturePage } from './pages/ArchitecturePage'
 import { FileViewPage } from './pages/FileViewPage'
 import { ChatPage } from './pages/ChatPage'
@@ -13,7 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<RepoInputPage />} />
         <Route path="/ingestion/:jobId" element={<IngestionStatusPage />} />
-        <Route path="/repo/:repoId" element={<RepoExplorerPagePremium />} />
+        <Route path="/repo/:repoId" element={<RepoExplorerPage />} />
         <Route path="/repo/:repoId/architecture" element={<ArchitecturePage />} />
         <Route path="/repo/:repoId/chat" element={<ChatPage />} />
         <Route path="/repo/:repoId/file/:filePath" element={<FileViewPage />} />

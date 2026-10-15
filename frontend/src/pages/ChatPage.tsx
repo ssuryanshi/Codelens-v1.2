@@ -6,7 +6,7 @@ export function ChatPage() {
 
   if (!repoId) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0a0c12' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#121210' }}>
         <div className="text-center">
           <p className="text-gray-400 text-lg">Repository not found</p>
           <p className="text-gray-500 text-sm mt-2">Please select a repository from the dashboard</p>
@@ -16,10 +16,10 @@ export function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#0a0c12' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: '#121210' }}>
       {/* Custom Navbar with Glassmorphism */}
-      <header className="sticky top-0 z-50 backdrop-blur-md" style={{ 
-        background: 'rgba(10, 12, 18, 0.8)',
+      <header className="sticky top-0 z-50 " style={{ 
+        background: '#121210',
         borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
       }}>
         <div className="px-6 py-3 flex items-center justify-between">
@@ -28,7 +28,7 @@ export function ChatPage() {
             {/* BloomWay AI Logo */}
             <Link to={`/repo/${repoId}`} className="flex items-center space-x-2">
               <img 
-                src="/logo_bloomway.png" 
+                src="/logo.svg" 
                 alt="CodeLens Logo"
                 className="w-8 h-8 rounded-xl object-contain"
               />
@@ -44,9 +44,9 @@ export function ChatPage() {
             
             {/* AI Chat Capsule */}
             <div className="px-3 py-1 rounded-full text-xs font-medium" style={{ 
-              background: 'rgba(59, 130, 246, 0.15)',
+              background: 'rgba(232, 100, 58, 0.15)',
               color: '#60a5fa',
-              border: '1px solid rgba(59, 130, 246, 0.3)'
+              border: '1px solid rgba(232, 100, 58, 0.3)'
             }}>
               AI Chat
             </div>

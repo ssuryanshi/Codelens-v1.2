@@ -81,7 +81,7 @@ CodeLens is an intelligent codebase analysis platform that leverages Amazon Bedr
 **Backend:**
 - Python 3.9
 - AWS Lambda
-- Amazon Bedrock (Claude 3.5 Sonnet)
+- Amazon Bedrock (Nova Lite for generation, Titan Text Embeddings v2 for retrieval)
 - Amazon DynamoDB
 - Amazon SQS
 - Amazon S3
@@ -106,8 +106,8 @@ CodeLens is an intelligent codebase analysis platform that leverages Amazon Bedr
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/HARSH160804/CodeLens.git
-cd CodeLens
+git clone https://github.com/HARSH160804/CodeLens.AI.git
+cd CodeLens.AI
 ```
 
 ### 2. Deploy Backend
@@ -127,7 +127,8 @@ This will:
 
 **Option A: AWS Amplify Console (Recommended)**
 
-1. Open [AWS Amplify Console](https://console.aws.amazon.com/amplify)
+1. Set `VITE_API_BASE_URL` (see `frontend/.env.example`) to the stack's `ApiEndpoint` output
+2. Open [AWS Amplify Console](https://console.aws.amazon.com/amplify)
 2. Click "New app" → "Host web app"
 3. Connect your GitHub repository
 4. Select branch: `main`

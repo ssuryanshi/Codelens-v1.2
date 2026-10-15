@@ -66,7 +66,7 @@ Region: us-east-1
 ### API Gateway
 
 ```
-Endpoint: https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod/
+Endpoint: https://<API_ID>.execute-api.us-east-1.amazonaws.com/Prod/
 Status: Active (HTTP 403 for root path - expected)
 ```
 
@@ -92,7 +92,7 @@ BloomWay-Embeddings
 ### S3 Bucket (1)
 
 ```
-bloomway-code-055392178569-us-east-1
+bloomway-code-<ACCOUNT_ID>-us-east-1
 Lifecycle: Delete after 1 day
 ```
 
@@ -126,7 +126,7 @@ aws lambda list-functions --query "Functions[?contains(FunctionName, 'h2s-backen
 aws cloudformation describe-stacks --stack-name h2s-backend --query 'Stacks[0].Outputs[?OutputKey==`ApiEndpoint`].OutputValue' --output text
 
 # Test API
-curl -i https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod/
+curl -i https://<API_ID>.execute-api.us-east-1.amazonaws.com/Prod/
 
 # DynamoDB tables
 aws dynamodb list-tables --query "TableNames[?contains(@, 'BloomWay')]"

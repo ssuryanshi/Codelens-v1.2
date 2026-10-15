@@ -34,11 +34,11 @@
   ```bash
   aws cloudformation describe-stacks --stack-name h2s-backend --query 'Stacks[0].Outputs[?OutputKey==`ApiEndpoint`].OutputValue' --output text
   ```
-  **Result:** `https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod/`
+  **Result:** `https://<API_ID>.execute-api.us-east-1.amazonaws.com/Prod/`
 
 - [x] **API Gateway is accessible**
   ```bash
-  curl -i https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod/
+  curl -i https://<API_ID>.execute-api.us-east-1.amazonaws.com/Prod/
   ```
   **Expected:** HTTP 403 or 404 (not 5xx)
   **Result:** HTTP 403 ✅ (API Gateway active, no root route defined)
@@ -58,7 +58,7 @@
 ### S3 Bucket
 
 - [x] **Code artifacts bucket exists**
-  - Bucket: `bloomway-code-055392178569-us-east-1` ✅
+  - Bucket: `bloomway-code-<ACCOUNT_ID>-us-east-1` ✅
   - Lifecycle policy: 1 day ✅
 
 ### IAM & Permissions
@@ -106,7 +106,7 @@
 
 **Stack Name:** `h2s-backend`
 
-**API Endpoint:** `https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod/`
+**API Endpoint:** `https://<API_ID>.execute-api.us-east-1.amazonaws.com/Prod/`
 
 **Lambda Functions:** 6/6 deployed
 

@@ -27,7 +27,7 @@
 Stack Name: h2s-backend
 Status: CREATE_COMPLETE
 Region: us-east-1
-API Endpoint: https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod/
+API Endpoint: https://<API_ID>.execute-api.us-east-1.amazonaws.com/Prod/
 ```
 
 ### Deployment Command
@@ -88,7 +88,7 @@ All scripts and documentation have been updated to reflect this.
 
 ✅ **API Gateway is deployed and accessible**
 
-- Endpoint: `https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod/`
+- Endpoint: `https://<API_ID>.execute-api.us-east-1.amazonaws.com/Prod/`
 - Root path returns HTTP 403 (expected - no route defined)
 - All API routes are functional
 

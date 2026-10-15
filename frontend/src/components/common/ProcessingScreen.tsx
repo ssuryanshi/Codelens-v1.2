@@ -26,49 +26,35 @@ export function ProcessingScreen() {
   return (
     <div
       className="fixed inset-0 flex items-center justify-center overflow-hidden"
-      style={{ backgroundColor: '#080b15' }}
+      style={{ backgroundColor: '#121210' }}
     >
-      {/* Subtle background glow */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'radial-gradient(circle at center, rgba(59,130,246,0.08), transparent 60%)',
-        }}
-      />
 
       {/* Center Processing Card */}
       <div
         className="relative z-10 text-center px-8 py-10"
         style={{
-          background: 'rgba(255,255,255,0.02)',
-          border: '1px solid rgba(255,255,255,0.06)',
-          borderRadius: '16px',
+          background: '#191917',
+          border: '1px solid #2e2d29',
+          borderRadius: '6px',
           width: '520px',
           maxWidth: '90vw',
         }}
       >
         {/* Spinner with subtle glow */}
         <div className="mb-6 relative inline-block">
-          {/* Subtle glow behind spinner */}
-          <div
-            className="absolute inset-0 rounded-full blur-xl"
-            style={{
-              background: 'radial-gradient(circle, rgba(59,130,246,0.15), transparent 60%)',
-            }}
-          />
           {/* Improved spinner with gradient */}
           <div
             className="relative w-12 h-12 rounded-full"
             style={{
               border: '3px solid rgba(255,255,255,0.1)',
-              borderTopColor: '#3b82f6',
+              borderTopColor: '#e8643a',
               animation: 'spin 1s linear infinite',
             }}
           />
         </div>
 
         {/* Title - Larger and more specific */}
-        <h2 className="text-[30px] font-semibold text-white mb-2 leading-tight">
+        <h2 className="font-display text-[34px] text-bone mb-2 leading-tight">
           Analyzing repository architecture
         </h2>
 
@@ -79,14 +65,14 @@ export function ProcessingScreen() {
 
         {/* Progress bar with animated progress */}
         <div
-          className="w-full rounded-full h-1.5 mb-6 overflow-hidden"
-          style={{ background: '#1f2937' }}
+          className="w-full rounded-sm h-1 mb-6 overflow-hidden"
+          style={{ background: '#2e2d29' }}
         >
           <div
-            className="h-full rounded-full transition-all duration-300 ease-out"
+            className="h-full transition-all duration-300 ease-out"
             style={{
               width: `${progress}%`,
-              background: 'linear-gradient(90deg, #3b82f6, #6366f1)',
+              background: '#e8643a',
             }}
           />
         </div>

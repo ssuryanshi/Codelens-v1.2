@@ -3,42 +3,71 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --ink: #121210;
+    --surface: #191917;
+    --raised: #201f1c;
+    --line: #2e2d29;
+    --bone: #e9e6dc;
+    --muted: #8f8b7e;
+    --accent: #e8643a;
+  }
+
   html {
-    @apply bg-dark-bg;
-    background-color: #0a0c12;
+    background-color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
-  
+
   body {
-    @apply bg-dark-bg text-gray-100;
-    background-color: #0a0c12;
+    @apply font-sans text-gray-100;
+    background-color: var(--ink);
     min-height: 100vh;
+    font-feature-settings: 'ss01', 'cv11';
   }
-  
+
   #root {
     min-height: 100vh;
-    background-color: #0a0c12;
+  }
+
+  ::selection {
+    background: rgba(232, 100, 58, 0.35);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* quiet scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #3a3934 transparent;
   }
 }
 
 @layer utilities {
   @keyframes shimmer {
-    0% {
-      transform: translateX(-100%);
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .animate-shimmer { animation: shimmer 2s infinite; }
+  .animation-delay-200 { animation-delay: 200ms; }
+  .animation-delay-400 { animation-delay: 400ms; }
+
+  .font-display { letter-spacing: -0.01em; }
+  .label {
+    @apply font-mono text-[11px] uppercase text-gray-400;
+    letter-spacing: 0.08em;
+  }
+  .rule { border-color: var(--line); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
     }
-    100% {
-      transform: translateX(100%);
-    }
-  }
-  
-  .animate-shimmer {
-    animation: shimmer 2s infinite;
-  }
-  
-  .animation-delay-200 {
-    animation-delay: 200ms;
-  }
-  
-  .animation-delay-400 {
-    animation-delay: 400ms;
   }
 }

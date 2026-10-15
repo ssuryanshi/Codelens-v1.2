@@ -60,7 +60,7 @@ export function ChatInterface({ repoId }: ChatInterfaceProps) {
               lineHeight: '1.2',
               letterSpacing: '-0.02em'
             }}>
-              Ask anything about this <span style={{ color: '#3b82f6' }}>repository</span>
+              Ask anything about this <span style={{ color: '#e8643a' }}>repository</span>
             </h1>
             <p className="text-gray-400" style={{ 
               fontSize: '16px',
@@ -84,7 +84,7 @@ export function ChatInterface({ repoId }: ChatInterfaceProps) {
                 disabled={isLoading}
                 className="text-gray-300 rounded-full transition-all hover:text-white hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
-                  background: '#0f1419',
+                  background: '#121210',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
                   fontSize: '14px',
                   padding: '8px 14px'
@@ -111,7 +111,7 @@ export function ChatInterface({ repoId }: ChatInterfaceProps) {
                   <div
                     className="max-w-[70%] px-4 py-2 rounded-2xl text-white"
                     style={{ 
-                      background: '#3b82f6',
+                      background: '#e8643a',
                       fontSize: '15px'
                     }}
                   >
@@ -124,7 +124,7 @@ export function ChatInterface({ repoId }: ChatInterfaceProps) {
                   <div
                     className="max-w-[85%] px-5 py-4 rounded-2xl text-gray-100 space-y-4"
                     style={{
-                      background: '#0f1419',
+                      background: '#121210',
                       border: '1px solid rgba(255, 255, 255, 0.1)',
                       lineHeight: '1.6'
                     }}
@@ -142,7 +142,7 @@ export function ChatInterface({ repoId }: ChatInterfaceProps) {
                           <div 
                             key={idx} 
                             className="flex items-start space-x-2 px-3 py-2 rounded-lg"
-                            style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.2)' }}
+                            style={{ background: 'rgba(232, 100, 58, 0.1)', border: '1px solid rgba(232, 100, 58, 0.2)' }}
                           >
                             <svg className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -172,7 +172,7 @@ export function ChatInterface({ repoId }: ChatInterfaceProps) {
               <div
                 className="px-5 py-4 rounded-2xl flex items-center space-x-3"
                 style={{
-                  background: '#0f1419',
+                  background: '#121210',
                   border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}
               >
@@ -205,7 +205,7 @@ export function ChatInterface({ repoId }: ChatInterfaceProps) {
               onClick={scrollToBottom}
               className="fixed bottom-24 right-8 p-3 rounded-full shadow-lg transition-all hover:scale-110"
               style={{
-                background: '#3b82f6',
+                background: '#e8643a',
                 border: '1px solid rgba(255, 255, 255, 0.1)'
               }}
             >
@@ -228,7 +228,7 @@ export function ChatInterface({ repoId }: ChatInterfaceProps) {
             disabled={isLoading}
             className="flex-1 px-5 py-3 rounded-full text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             style={{ 
-              background: '#0f1419',
+              background: '#121210',
               border: '1px solid rgba(255, 255, 255, 0.1)',
               fontSize: '15px'
             }}
@@ -238,7 +238,7 @@ export function ChatInterface({ repoId }: ChatInterfaceProps) {
             disabled={!input.trim() || isLoading}
             className="px-6 py-3 text-white font-medium rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             style={{
-              background: !input.trim() || isLoading ? '#374151' : '#3b82f6'
+              background: !input.trim() || isLoading ? '#2e2d29' : '#e8643a'
             }}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

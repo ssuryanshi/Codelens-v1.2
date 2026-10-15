@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import axios from 'axios'
+import { API_BASE_URL } from '../config'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod'
 
 interface IngestionStatus {
   job_id: string

@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { useState } from 'react'
 import { MainLayout } from '../components/layout/MainLayout'
-import { ArchitectureView } from '../components/architecture/ArchitectureView_Enhanced'
+import { ArchitectureView } from '../components/architecture/ArchitectureView'
 
 export function ArchitecturePage() {
   const { repoId } = useParams<{ repoId: string }>()

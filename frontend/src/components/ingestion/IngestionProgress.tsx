@@ -31,13 +31,11 @@ export function IngestionProgress({ current, total, className = '' }: IngestionP
       </div>
       
       {/* Progress bar - 8px thick with rounded corners */}
-      <div className="relative w-full h-2 bg-gray-700 rounded-lg overflow-hidden">
+      <div className="relative w-full h-1.5 bg-gray-700 rounded-sm overflow-hidden">
         <div
-          className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-lg transition-all duration-500 ease-out"
+          className="absolute top-0 left-0 h-full bg-accent rounded-sm transition-all duration-500 ease-out"
           style={{ width: `${percentage}%` }}
         >
-          {/* Animated shimmer effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
         </div>
       </div>
     </div>

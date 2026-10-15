@@ -32,11 +32,11 @@ The CodeLens backend has been successfully deployed to AWS using SAM.
 - `BloomWay-Embeddings`
 
 ✅ **S3 Bucket:**
-- `bloomway-code-055392178569-us-east-1`
+- `bloomway-code-<ACCOUNT_ID>-us-east-1`
 - Lifecycle policy: Delete after 1 day
 
 ✅ **API Gateway:**
-- Endpoint: `https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod/`
+- Endpoint: `https://<API_ID>.execute-api.us-east-1.amazonaws.com/Prod/`
 - Status: Active (returns 403 for root path, as expected)
 
 ✅ **IAM Roles:**
@@ -79,11 +79,11 @@ aws cloudformation describe-stacks --stack-name h2s-backend --query 'Stacks[0].O
 
 **Expected:** API Gateway endpoint URL
 
-**Actual:** ✅ `https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod/`
+**Actual:** ✅ `https://<API_ID>.execute-api.us-east-1.amazonaws.com/Prod/`
 
 **Test endpoint:**
 ```bash
-curl -i https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod/
+curl -i https://<API_ID>.execute-api.us-east-1.amazonaws.com/Prod/
 ```
 
 **Expected:** HTTP 403 or 404 (not 5xx)
@@ -108,7 +108,7 @@ aws s3 ls | grep bloomway
 
 **Expected:** 1 bucket with lifecycle policy
 
-**Actual:** ✅ `bloomway-code-055392178569-us-east-1`
+**Actual:** ✅ `bloomway-code-<ACCOUNT_ID>-us-east-1`
 
 ---
 
@@ -159,7 +159,7 @@ cd infrastructure
 2. **API Gateway Status:**
    - Originally expected: Not deployed
    - Actual status: ✅ Deployed and active
-   - Endpoint: `https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod/`
+   - Endpoint: `https://<API_ID>.execute-api.us-east-1.amazonaws.com/Prod/`
 
 3. **Bedrock Access:**
    - Status: ✅ Enabled
@@ -211,7 +211,7 @@ This will:
 
 **Symptom:** Cannot find API endpoint
 
-**Solution:** ✅ API Gateway exists at `https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod/`
+**Solution:** ✅ API Gateway exists at `https://<API_ID>.execute-api.us-east-1.amazonaws.com/Prod/`
 
 ### Issue: Lambda functions not visible
 
@@ -234,7 +234,7 @@ aws lambda list-functions --query "Functions[?contains(FunctionName, 'h2s-backen
 aws cloudformation describe-stacks --stack-name h2s-backend --query 'Stacks[0].Outputs[?OutputKey==`ApiEndpoint`].OutputValue' --output text
 
 # Test API endpoint
-curl -i https://x7xqq42tpj.execute-api.us-east-1.amazonaws.com/Prod/
+curl -i https://<API_ID>.execute-api.us-east-1.amazonaws.com/Prod/
 
 # List DynamoDB tables
 aws dynamodb list-tables --query "TableNames[?contains(@, 'BloomWay')]"

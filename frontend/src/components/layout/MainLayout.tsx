@@ -20,10 +20,10 @@ export function MainLayout({ children, showSidebar = false, architecturePatterns
 
   return (
     <div className={`min-h-screen ${darkMode ? 'dark' : ''}`}>
-      <div className="min-h-screen text-gray-100" style={{ background: '#0a0e14' }}>
+      <div className="min-h-screen text-gray-100" style={{ background: '#121210' }}>
         {/* Header */}
         <header className="sticky top-0 z-50" style={{ 
-          background: '#0a0e14',
+          background: '#121210',
           borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
         }}>
           <div className="px-6 py-3 flex items-center justify-between">
@@ -31,7 +31,7 @@ export function MainLayout({ children, showSidebar = false, architecturePatterns
               <Link to="/" className="flex items-center space-x-2">
                 {/* BloomWay AI Logo */}
                 <img 
-                  src="/logo_bloomway.png" 
+                  src="/logo.svg" 
                   alt="CodeLens Logo"
                   className="w-8 h-8 rounded-xl object-contain"
                 />
@@ -120,7 +120,7 @@ export function MainLayout({ children, showSidebar = false, architecturePatterns
         <div className="flex h-[calc(100vh-57px)]">
           {showSidebar && (
             <aside className="w-64 overflow-y-auto" style={{ 
-              background: '#0a0e14',
+              background: '#121210',
               borderRight: '1px solid rgba(255, 255, 255, 0.05)'
             }}>
               {/* Sidebar content will be injected here */}
