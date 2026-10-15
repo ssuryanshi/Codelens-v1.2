@@ -2,6 +2,13 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: BloomWay AI - Comprehensive serverless codebase understanding tool
 
+Parameters:
+  GeminiApiKey:
+    Type: String
+    Description: Google AI Studio API key for Gemini (used by backend/lib/bedrock_client.py)
+    NoEcho: true
+    MinLength: 20
+
 Globals:
   Function:
     Runtime: python3.9
@@ -18,6 +25,7 @@ Globals:
         INGESTION_JOBS_TABLE: !Ref IngestionJobsTable
         PROCESSING_QUEUE_URL: !Ref ProcessingQueue
         BEDROCK_REGION: !Ref AWS::Region
+        GEMINI_API_KEY: !Ref GeminiApiKey
   Api:
     Cors:
       AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
@@ -424,6 +432,7 @@ Resources:
           SESSIONS_TABLE: !Ref SessionsTable
           CODE_BUCKET: !Ref CodeArtifactsBucket
           BEDROCK_REGION: !Ref AWS::Region
+          GEMINI_API_KEY: !Ref GeminiApiKey
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref IngestionJobsTable

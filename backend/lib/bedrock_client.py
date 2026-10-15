@@ -1,9 +1,36 @@
-"""Amazon Bedrock client for LLM and embedding operations."""
-import json
+"""LLM client for CodeLens.
+
+Historical name: the project originally called Amazon Bedrock (Nova Lite + Titan Embed v2).
+The new AWS account has every Bedrock on-demand quota pinned at 0 and marked non-adjustable,
+so this module was swapped to Google Gemini. The class name `BedrockClient` is kept so the
+handlers do not need to change; file/class rename is tracked as follow-up tech debt.
+
+Public surface (unchanged):
+    class BedrockClient
+        .ARCHITECTURE_SYSTEM_PROMPT  (instance attribute mirroring the module constant)
+        .generate_embedding(text)        -> List[float]
+        .invoke_claude(prompt, system_prompt=None, max_tokens=4096, temperature=0.7) -> str
+        .invoke_claude_streaming(...)    -> Generator[str, None, None]
+        .generate_architecture_summary(repo_structure) -> str
+        .explain_file(file_path, code_content, level='intermediate') -> str
+        .generate_mermaid_diagram(architecture_summary) -> str
+        .answer_question_with_context(question, code_contexts) -> str
+
+    Module-level: ARCHITECTURE_SYSTEM_PROMPT, FILE_EXPLAIN_PROMPT, CHAT_SYSTEM_PROMPT,
+                  DIAGRAM_GENERATION_PROMPT, count_tokens, truncate_to_context
+
+Config via environment variables:
+    GEMINI_API_KEY        (required) — Google AI Studio key
+    GEMINI_LLM_MODEL      (optional, default 'gemini-2.5-flash')
+    GEMINI_EMBED_MODEL    (optional, default 'text-embedding-004')
+"""
+import os
 import time
-import boto3
 from typing import List, Dict, Any, Optional, Generator
-from botocore.exceptions import ClientError
+
+from google import genai
+from google.genai import types as genai_types
+from google.genai import errors as genai_errors
 
 
 # Prompt Templates
@@ -57,204 +84,100 @@ Architecture Analysis:
 Generate ONLY the Mermaid.js diagram code (starting with ```mermaid and ending with ```). Use appropriate diagram types (graph, flowchart, or C4 diagram) based on the architecture."""
 
 
+_RETRYABLE_STATUS = {429, 500, 502, 503, 504}
+
+
 class BedrockClient:
-    """Client for interacting with Amazon Bedrock models."""
-    
+    """Gemini-backed LLM client (historical name, see module docstring)."""
+
     def __init__(self, region: str = 'us-east-1'):
-        """
-        Initialize Bedrock client.
-        
-        Args:
-            region: AWS region for Bedrock service
-        """
-        self.client = boto3.client('bedrock-runtime', region_name=region)
-        self.llm_model_id = 'amazon.nova-lite-v1:0'
-        self.embedding_model_id = 'amazon.titan-embed-text-v2:0'
+        """Build a Gemini client. `region` is accepted for signature compatibility only."""
+        api_key = os.environ.get('GEMINI_API_KEY')
+        if not api_key:
+            raise RuntimeError(
+                "GEMINI_API_KEY is not set. Add it as a Lambda environment variable "
+                "(via the SAM parameter GeminiApiKey) and redeploy."
+            )
+        self.client = genai.Client(api_key=api_key)
+        self.llm_model_id = os.environ.get('GEMINI_LLM_MODEL', 'gemini-flash-latest')
+        self.embedding_model_id = os.environ.get('GEMINI_EMBED_MODEL', 'gemini-embedding-001')
         self.max_retries = 3
         self.base_delay = 1.0  # seconds
-    
+        # Mirror module constant on the instance — handlers access it as
+        # bedrock_client.ARCHITECTURE_SYSTEM_PROMPT.
+        self.ARCHITECTURE_SYSTEM_PROMPT = ARCHITECTURE_SYSTEM_PROMPT
+
     def _retry_with_backoff(self, func, *args, **kwargs) -> Any:
-        """
-        Execute function with exponential backoff retry logic.
-        
-        Args:
-            func: Function to execute
-            *args: Positional arguments for func
-            **kwargs: Keyword arguments for func
-            
-        Returns:
-            Result from func
-            
-        Raises:
-            ClientError: If all retries fail
-        """
         for attempt in range(self.max_retries):
             try:
                 return func(*args, **kwargs)
-            except ClientError as e:
-                error_code = e.response.get('Error', {}).get('Code', '')
-                
-                # Don't retry on validation errors
-                if error_code in ['ValidationException', 'AccessDeniedException']:
+            except genai_errors.APIError as e:
+                status = getattr(e, 'code', None) or getattr(e, 'status_code', None)
+                if status not in _RETRYABLE_STATUS or attempt == self.max_retries - 1:
                     raise
-                
-                # Retry on throttling or service errors
-                if attempt < self.max_retries - 1:
-                    delay = self.base_delay * (2 ** attempt)
-                    time.sleep(delay)
-                else:
-                    raise
-    
+                time.sleep(self.base_delay * (2 ** attempt))
+
     def generate_embedding(self, text: str) -> List[float]:
+        """Return embedding vector for `text`.
+
+        Gemini rejects empty inputs with INVALID_ARGUMENT (Bedrock Titan accepted
+        them silently). Substitute whitespace for empty chunks so one bad chunk
+        doesn't fail a whole ingestion job.
         """
-        Generate embedding vector using Amazon Titan Embeddings v2.
-        
-        Args:
-            text: Text to embed
-            
-        Returns:
-            Embedding vector (1024 dimensions for Titan v2)
-            
-        Raises:
-            ClientError: If Bedrock API call fails
-        """
+        content = text if (text and text.strip()) else " "
         def _invoke():
-            body = json.dumps({
-                "inputText": text
-            })
-            
-            response = self.client.invoke_model(
-                modelId=self.embedding_model_id,
-                body=body,
-                contentType='application/json',
-                accept='application/json'
+            response = self.client.models.embed_content(
+                model=self.embedding_model_id,
+                contents=content,
             )
-            
-            response_body = json.loads(response['body'].read())
-            return response_body['embedding']
-        
+            return list(response.embeddings[0].values)
         return self._retry_with_backoff(_invoke)
-    
+
     def invoke_claude(
-        self, 
-        prompt: str, 
-        system_prompt: Optional[str] = None, 
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
         max_tokens: int = 4096,
-        temperature: float = 0.7
+        temperature: float = 0.7,
     ) -> str:
-        """
-        Invoke LLM for text generation via Amazon Bedrock.
-        
-        Args:
-            prompt: User prompt/question
-            system_prompt: Optional system prompt for context
-            max_tokens: Maximum tokens to generate
-            temperature: Sampling temperature (0.0 to 1.0)
-            
-        Returns:
-            Generated text response
-            
-        Raises:
-            ClientError: If Bedrock API call fails
-        """
+        """Generate text. Method name kept for handler compatibility."""
         def _invoke():
-            body = {
-                "inferenceConfig": {
-                    "max_new_tokens": max_tokens,
-                    "temperature": temperature
-                },
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": [{"text": prompt}]
-                    }
-                ]
-            }
-            
-            if system_prompt:
-                body["system"] = [{"text": system_prompt}]
-            
-            response = self.client.invoke_model(
-                modelId=self.llm_model_id,
-                body=json.dumps(body),
-                contentType='application/json',
-                accept='application/json'
+            config = genai_types.GenerateContentConfig(
+                max_output_tokens=max_tokens,
+                temperature=temperature,
+                system_instruction=system_prompt if system_prompt else None,
             )
-            
-            response_body = json.loads(response['body'].read())
-            return response_body['output']['message']['content'][0]['text']
-        
+            response = self.client.models.generate_content(
+                model=self.llm_model_id,
+                contents=prompt,
+                config=config,
+            )
+            return response.text or ""
         return self._retry_with_backoff(_invoke)
-    
+
     def invoke_claude_streaming(
-        self, 
-        prompt: str, 
-        system_prompt: Optional[str] = None, 
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
         max_tokens: int = 4096,
-        temperature: float = 0.7
+        temperature: float = 0.7,
     ) -> Generator[str, None, None]:
-        """
-        Invoke LLM with streaming response.
-        
-        Args:
-            prompt: User prompt/question
-            system_prompt: Optional system prompt for context
-            max_tokens: Maximum tokens to generate
-            temperature: Sampling temperature (0.0 to 1.0)
-            
-        Yields:
-            Text chunks as they are generated
-            
-        Raises:
-            ClientError: If Bedrock API call fails
-        """
-        body = {
-            "inferenceConfig": {
-                "max_new_tokens": max_tokens,
-                "temperature": temperature
-            },
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [{"text": prompt}]
-                }
-            ]
-        }
-        
-        if system_prompt:
-            body["system"] = [{"text": system_prompt}]
-        
-        response = self.client.invoke_model_with_response_stream(
-            modelId=self.llm_model_id,
-            body=json.dumps(body),
-            contentType='application/json',
-            accept='application/json'
+        config = genai_types.GenerateContentConfig(
+            max_output_tokens=max_tokens,
+            temperature=temperature,
+            system_instruction=system_prompt if system_prompt else None,
         )
-        
-        stream = response['body']
-        for event in stream:
-            chunk = event.get('chunk')
-            if chunk:
-                chunk_data = json.loads(chunk['bytes'].decode())
-                
-                if chunk_data.get('type') == 'content_block_delta':
-                    if 'delta' in chunk_data and 'text' in chunk_data['delta']:
-                        yield chunk_data['delta']['text']
-                elif 'contentBlockDelta' in chunk_data:
-                    delta = chunk_data['contentBlockDelta'].get('delta', {})
-                    if 'text' in delta:
-                        yield delta['text']
-    
+        stream = self.client.models.generate_content_stream(
+            model=self.llm_model_id,
+            contents=prompt,
+            config=config,
+        )
+        for chunk in stream:
+            text = getattr(chunk, 'text', None)
+            if text:
+                yield text
+
     def generate_architecture_summary(self, repo_structure: str) -> str:
-        """
-        Generate architecture summary from repository structure.
-        
-        Args:
-            repo_structure: String representation of repository structure
-            
-        Returns:
-            Architecture analysis text
-        """
         prompt = f"""Analyze this repository structure and provide an architecture summary:
 
 {repo_structure}
@@ -265,140 +188,66 @@ Identify:
 3. Key components and their responsibilities
 4. Data flow
 5. External dependencies"""
-        
         return self.invoke_claude(
             prompt=prompt,
             system_prompt=ARCHITECTURE_SYSTEM_PROMPT,
-            max_tokens=2048
+            max_tokens=2048,
         )
-    
+
     def explain_file(
-        self, 
-        file_path: str, 
-        code_content: str, 
-        level: str = 'intermediate'
+        self,
+        file_path: str,
+        code_content: str,
+        level: str = 'intermediate',
     ) -> str:
-        """
-        Generate file explanation at specified complexity level.
-        
-        Args:
-            file_path: Path to the file
-            code_content: Content of the file
-            level: Explanation level (beginner/intermediate/advanced)
-            
-        Returns:
-            File explanation text
-        """
         prompt = FILE_EXPLAIN_PROMPT.format(
             level=level,
             file_path=file_path,
-            code_content=code_content
+            code_content=code_content,
         )
-        
-        return self.invoke_claude(
-            prompt=prompt,
-            max_tokens=2048
-        )
-    
+        return self.invoke_claude(prompt=prompt, max_tokens=2048)
+
     def generate_mermaid_diagram(self, architecture_summary: str) -> str:
-        """
-        Generate Mermaid.js diagram from architecture summary.
-        
-        Args:
-            architecture_summary: Architecture analysis text
-            
-        Returns:
-            Mermaid.js diagram code
-        """
-        prompt = DIAGRAM_GENERATION_PROMPT.format(
-            architecture_summary=architecture_summary
-        )
-        
-        response = self.invoke_claude(
-            prompt=prompt,
-            max_tokens=1024
-        )
-        
-        # Extract mermaid code block
+        prompt = DIAGRAM_GENERATION_PROMPT.format(architecture_summary=architecture_summary)
+        response = self.invoke_claude(prompt=prompt, max_tokens=1024)
         if '```mermaid' in response:
             start = response.find('```mermaid') + 10
             end = response.find('```', start)
             return response[start:end].strip()
-        
         return response.strip()
-    
+
     def answer_question_with_context(
-        self, 
-        question: str, 
-        code_contexts: List[Dict[str, str]]
+        self,
+        question: str,
+        code_contexts: List[Dict[str, str]],
     ) -> str:
-        """
-        Answer question using RAG with code context.
-        
-        Args:
-            question: User's question
-            code_contexts: List of dicts with 'file_path' and 'content' keys
-            
-        Returns:
-            Answer with citations
-        """
         context_str = "\n\n".join([
             f"File: {ctx['file_path']}\n```\n{ctx['content']}\n```"
             for ctx in code_contexts
         ])
-        
         prompt = f"""Question: {question}
 
 Relevant Code Context:
 {context_str}
 
 Please answer the question based on the provided code context. Cite specific files when referencing code."""
-        
         return self.invoke_claude(
             prompt=prompt,
             system_prompt=CHAT_SYSTEM_PROMPT,
-            max_tokens=2048
+            max_tokens=2048,
         )
 
 
 def count_tokens(text: str) -> int:
-    """
-    Estimate token count for text.
-    
-    Uses a simple heuristic: ~4 characters per token for English text.
-    For production, consider using tiktoken library.
-    
-    Args:
-        text: Text to count tokens for
-        
-    Returns:
-        Estimated token count
-    """
-    # Simple heuristic: average 4 characters per token
+    """Rough estimate: 4 chars per token."""
     return len(text) // 4
 
 
 def truncate_to_context(text: str, max_tokens: int) -> str:
-    """
-    Truncate text to fit within token limit.
-    
-    Args:
-        text: Text to truncate
-        max_tokens: Maximum number of tokens
-        
-    Returns:
-        Truncated text
-    """
     estimated_tokens = count_tokens(text)
-    
     if estimated_tokens <= max_tokens:
         return text
-    
-    # Calculate character limit based on token limit
     char_limit = max_tokens * 4
-    
-    # Truncate and add ellipsis
     if len(text) > char_limit:
         return text[:char_limit - 3] + "..."
-    
     return text
