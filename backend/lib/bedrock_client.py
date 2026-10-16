@@ -130,8 +130,29 @@ class BedrockClient:
                 status = getattr(e, 'code', None) or getattr(e, 'status_code', None)
                 if status not in _RETRYABLE_STATUS or attempt == self.max_retries - 1:
                     raise
-                # 1s, 2s, 4s, 8s, 16s — total budget ~31s before giving up.
-                time.sleep(self.base_delay * (2 ** attempt))
+                # Honor Gemini's `retryDelay` hint when present (e.g. 429
+                # free-tier quota responses carry "Please retry in 20.8s").
+                # Fall back to exponential backoff otherwise.
+                delay = self._extract_retry_delay(e)
+                if delay is None:
+                    delay = self.base_delay * (2 ** attempt)
+                time.sleep(min(delay, 30.0))  # cap any one sleep at 30s
+
+    @staticmethod
+    def _extract_retry_delay(err: genai_errors.APIError) -> Optional[float]:
+        """Pull RetryInfo.retryDelay (seconds) out of a Gemini error payload."""
+        try:
+            details = getattr(err, 'details', None)
+            if isinstance(details, dict):
+                details = details.get('error', {}).get('details', [])
+            for d in details or []:
+                if d.get('@type', '').endswith('google.rpc.RetryInfo'):
+                    raw = d.get('retryDelay', '')
+                    if raw.endswith('s'):
+                        return float(raw[:-1])
+        except Exception:
+            pass
+        return None
 
     def generate_embedding(self, text: str) -> List[float]:
         """Return embedding vector for `text`.
