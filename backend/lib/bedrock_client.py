@@ -100,8 +100,23 @@ class BedrockClient:
             )
         self.client = genai.Client(api_key=api_key)
         self.llm_model_id = os.environ.get('GEMINI_LLM_MODEL', 'gemini-flash-latest')
+        # Fallback model used when the primary LLM returns 5xx/429 after all
+        # retries. Flash-Lite has more generous free-tier capacity, so it
+        # usually survives a Flash capacity spike. Set to empty to disable.
+        self.llm_fallback_model_id = os.environ.get(
+            'GEMINI_LLM_FALLBACK_MODEL', 'gemini-flash-lite-latest'
+        )
         self.embedding_model_id = os.environ.get('GEMINI_EMBED_MODEL', 'gemini-embedding-001')
-        self.max_retries = 3
+        # Native dimension of the embedding model. Handlers use this to size
+        # dummy "fetch all" query vectors that must match stored vectors.
+        _embed_dims = {
+            'gemini-embedding-001': 3072,
+            'gemini-embedding-2': 3072,
+            'gemini-embedding-2-preview': 3072,
+            'text-embedding-004': 768,
+        }
+        self.embedding_dim = _embed_dims.get(self.embedding_model_id, 3072)
+        self.max_retries = 5
         self.base_delay = 1.0  # seconds
         # Mirror module constant on the instance — handlers access it as
         # bedrock_client.ARCHITECTURE_SYSTEM_PROMPT.
@@ -115,6 +130,7 @@ class BedrockClient:
                 status = getattr(e, 'code', None) or getattr(e, 'status_code', None)
                 if status not in _RETRYABLE_STATUS or attempt == self.max_retries - 1:
                     raise
+                # 1s, 2s, 4s, 8s, 16s — total budget ~31s before giving up.
                 time.sleep(self.base_delay * (2 ** attempt))
 
     def generate_embedding(self, text: str) -> List[float]:
@@ -140,20 +156,40 @@ class BedrockClient:
         max_tokens: int = 4096,
         temperature: float = 0.7,
     ) -> str:
-        """Generate text. Method name kept for handler compatibility."""
-        def _invoke():
-            config = genai_types.GenerateContentConfig(
-                max_output_tokens=max_tokens,
-                temperature=temperature,
-                system_instruction=system_prompt if system_prompt else None,
-            )
+        """Generate text. Method name kept for handler compatibility.
+
+        Retries 5x with exponential backoff on 429/5xx. If the primary model is
+        still exhausted after that, falls back to llm_fallback_model_id (e.g.
+        gemini-flash-lite-latest) for one more attempt so a Flash capacity
+        spike doesn't kill a live demo.
+        """
+        config = genai_types.GenerateContentConfig(
+            max_output_tokens=max_tokens,
+            temperature=temperature,
+            system_instruction=system_prompt if system_prompt else None,
+        )
+
+        def _invoke_with(model_id):
             response = self.client.models.generate_content(
-                model=self.llm_model_id,
+                model=model_id,
                 contents=prompt,
                 config=config,
             )
             return response.text or ""
-        return self._retry_with_backoff(_invoke)
+
+        try:
+            return self._retry_with_backoff(_invoke_with, self.llm_model_id)
+        except genai_errors.APIError as e:
+            status = getattr(e, 'code', None) or getattr(e, 'status_code', None)
+            if status in _RETRYABLE_STATUS and self.llm_fallback_model_id:
+                print(
+                    f"LLM primary {self.llm_model_id} exhausted ({status}); "
+                    f"falling back to {self.llm_fallback_model_id}"
+                )
+                # Retry the fallback too — a free-tier spike can hit both
+                # Flash and Flash-Lite at the same time.
+                return self._retry_with_backoff(_invoke_with, self.llm_fallback_model_id)
+            raise
 
     def invoke_claude_streaming(
         self,

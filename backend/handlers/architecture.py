@@ -253,7 +253,7 @@ def _get_file_summaries(repo_id: str) -> List[Dict[str, Any]]:
         
         # Use a dummy query to get all chunks (not ideal, but works for MVP)
         # In production, vector store should have a get_all_files method
-        dummy_embedding = [0.0] * 1024  # Titan v2 dimension
+        dummy_embedding = [0.0] * bedrock_client.embedding_dim
         all_chunks = vector_store.search(repo_id, dummy_embedding, top_k=100)
         
         for chunk in all_chunks:

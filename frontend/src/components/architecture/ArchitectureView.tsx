@@ -129,17 +129,6 @@ export function ArchitectureView({ repoId, onPatternsLoaded, onLoadingChange }: 
 
   const currentArchitecture = architecture
 
-  // Helper function to safely get confidence (fallback to legacy field)
-  const getConfidence = () => {
-    if (currentArchitecture?.confidence !== undefined) {
-      return currentArchitecture.confidence
-    }
-    if (currentArchitecture?.architecture?.confidence !== undefined) {
-      return currentArchitecture.architecture.confidence
-    }
-    return 0.5 // Default fallback
-  }
-
   // Helper function to get confidence signals with fallback
   const getConfidenceSignals = () => {
     const signals = currentArchitecture?.confidence_signals
@@ -155,6 +144,35 @@ export function ArchitectureView({ repoId, onPatternsLoaded, onLoadingChange }: 
       }
     }
     return signals
+  }
+
+  // Overall confidence shown in the big number. The backend score averages
+  // every signal including the ones that are 0 because the repo simply has
+  // no DB or framework — that under-reports pure-code repos. Prefer the
+  // average of signals that actually apply (> 0) when it's higher.
+  const getConfidence = () => {
+    const backend =
+      currentArchitecture?.confidence ??
+      currentArchitecture?.architecture?.confidence ??
+      0.5
+    const signals = getConfidenceSignals()
+    const applicable = Object.values(signals).filter(
+      (v) => typeof v === 'number' && v > 0,
+    ) as number[]
+    if (applicable.length === 0) return backend
+    const applicableAvg =
+      applicable.reduce((a, b) => a + b, 0) / applicable.length
+    return Math.max(backend, applicableAvg)
+  }
+
+  // Count of signals considered applicable (> 0) vs the total we track.
+  const getApplicableSignalCount = () => {
+    const signals = getConfidenceSignals()
+    const total = Object.keys(signals).length
+    const applicable = Object.values(signals).filter(
+      (v) => typeof v === 'number' && v > 0,
+    ).length
+    return { applicable, total }
   }
 
   // Helper function to get confidence color
@@ -448,7 +466,15 @@ export function ArchitectureView({ repoId, onPatternsLoaded, onLoadingChange }: 
                     <div className="rounded p-5" style={{ background: '#121210' }}>
                       {/* Header Row: Title and Score */}
                       <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-bold text-white">Architecture Confidence</h3>
+                        <div>
+                          <h3 className="text-lg font-bold text-white">Architecture Confidence</h3>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {(() => {
+                              const { applicable, total } = getApplicableSignalCount()
+                              return `Scored on ${applicable} of ${total} signals applicable to this repository`
+                            })()}
+                          </div>
+                        </div>
                         <div className="flex items-center gap-4">
                           <div className={`text-4xl font-bold ${getConfidenceColor(getConfidence())}`}>
                             {(getConfidence() * 100).toFixed(0)}%
@@ -465,47 +491,92 @@ export function ArchitectureView({ repoId, onPatternsLoaded, onLoadingChange }: 
                       <div className="space-y-3">
                         {(() => {
                           const signals = getConfidenceSignals()
-                          const metrics = [
+                          const metrics: Array<{
+                            key: keyof typeof signals
+                            label: string
+                            color: 'structural' | 'quality'
+                            help: string
+                          }> = [
                             {
                               key: 'layer_separation_score',
                               label: 'Layer Separation',
-                              color: 'structural'
+                              color: 'structural',
+                              help: 'How cleanly layers (API / service / data) are separated',
                             },
                             {
                               key: 'dependency_direction_score',
                               label: 'Dependency Direction',
-                              color: 'structural'
+                              color: 'structural',
+                              help: 'Whether higher layers depend on lower ones (not vice versa)',
                             },
                             {
                               key: 'dependency_depth_score',
                               label: 'Dependency Depth',
-                              color: 'structural'
+                              color: 'structural',
+                              help: 'Average depth of imports; shallower = simpler',
                             },
                             {
                               key: 'naming_consistency_score',
                               label: 'Naming Consistency',
-                              color: 'quality'
+                              color: 'quality',
+                              help: 'File/module naming follows one convention',
                             },
                             {
                               key: 'framework_detection_score',
                               label: 'Framework Detection',
-                              color: 'structural'
+                              color: 'structural',
+                              help: 'A recognized framework was found (e.g. React, Flask, Express)',
                             },
                             {
                               key: 'database_integration_score',
                               label: 'Database Integration',
-                              color: 'structural'
-                            }
+                              color: 'structural',
+                              help: 'A database or ORM was detected',
+                            },
                           ]
 
-                          return metrics.map(metric => {
-                            const value = signals[metric.key as keyof typeof signals]
+                          return metrics.map((metric) => {
+                            const value = signals[metric.key]
                             const numValue = typeof value === 'number' ? value : 0
-                            if (numValue === 0) return null // Hide empty metrics
+                            const isNA = numValue === 0
+
+                            if (isNA) {
+                              // Show the signal as N/A so the user knows we
+                              // looked and found nothing (vs it being broken).
+                              return (
+                                <div
+                                  key={metric.key}
+                                  className="flex items-center gap-4 opacity-50"
+                                  title={metric.help}
+                                >
+                                  <div className="w-48 text-sm text-gray-500 flex items-center gap-2">
+                                    <span>{metric.label}</span>
+                                  </div>
+                                  <div className="flex-1 flex items-center gap-3">
+                                    <div
+                                      className="flex-1 h-2 rounded-full"
+                                      style={{ background: '#121210' }}
+                                    >
+                                      <div
+                                        className="h-full rounded-full"
+                                        style={{
+                                          width: '100%',
+                                          background:
+                                            'repeating-linear-gradient(45deg, #2a2925 0 6px, transparent 6px 12px)',
+                                        }}
+                                      />
+                                    </div>
+                                    <div className="w-12 text-xs text-gray-600 text-right uppercase tracking-wide">
+                                      N/A
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            }
+
                             const percentage = (numValue * 100).toFixed(0)
-                            
-                            // Color based on metric type and value
-                            let barColor = '#e8643a' // default blue
+
+                            let barColor = '#e8643a'
                             if (metric.color === 'structural') {
                               barColor = numValue >= 0.7 ? '#10b981' : numValue >= 0.5 ? '#e8643a' : '#fbbf24'
                             } else if (metric.color === 'quality') {
@@ -513,19 +584,30 @@ export function ArchitectureView({ repoId, onPatternsLoaded, onLoadingChange }: 
                             }
 
                             return (
-                              <div key={metric.key} className="flex items-center gap-4">
-                                <div className="w-48 text-sm text-gray-300">{metric.label}</div>
+                              <div
+                                key={metric.key}
+                                className="flex items-center gap-4"
+                                title={metric.help}
+                              >
+                                <div className="w-48 text-sm text-gray-300">
+                                  {metric.label}
+                                </div>
                                 <div className="flex-1 flex items-center gap-3">
-                                  <div className="flex-1 h-2 rounded-full" style={{ background: '#121210' }}>
+                                  <div
+                                    className="flex-1 h-2 rounded-full"
+                                    style={{ background: '#121210' }}
+                                  >
                                     <div
-                                      className="h-full rounded-full transition-all"
+                                      className="h-full rounded-full transition-all duration-500"
                                       style={{
                                         width: `${percentage}%`,
-                                        background: barColor
+                                        background: barColor,
                                       }}
                                     />
                                   </div>
-                                  <div className="w-12 text-sm text-gray-300 text-right">{percentage}%</div>
+                                  <div className="w-12 text-sm text-gray-300 text-right tabular-nums">
+                                    {percentage}%
+                                  </div>
                                 </div>
                               </div>
                             )

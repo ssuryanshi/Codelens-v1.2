@@ -615,7 +615,7 @@ def _identify_related_files(file_path: str, content: str, repo_id: str) -> List[
     # Query vector store for related files (simplified - would need better implementation)
     try:
         # Get a sample of chunks to find related files
-        dummy_embedding = [0.0] * 1024
+        dummy_embedding = [0.0] * bedrock_client.embedding_dim
         chunks = vector_store.search(repo_id, dummy_embedding, top_k=50)
         
         seen_files = set()
