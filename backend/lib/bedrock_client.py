@@ -98,13 +98,21 @@ class BedrockClient:
                 "GEMINI_API_KEY is not set. Add it as a Lambda environment variable "
                 "(via the SAM parameter GeminiApiKey) and redeploy."
             )
-        self.client = genai.Client(api_key=api_key)
-        self.llm_model_id = os.environ.get('GEMINI_LLM_MODEL', 'gemini-flash-latest')
-        # Fallback model used when the primary LLM returns 5xx/429 after all
-        # retries. Flash-Lite has more generous free-tier capacity, so it
-        # usually survives a Flash capacity spike. Set to empty to disable.
+        # Per-call timeout (ms) so a hung model doesn't eat the whole
+        # Lambda budget. Flash-Lite typically responds in 1-3s; 15s is a
+        # generous ceiling that still leaves room for retries + fallback.
+        self.client = genai.Client(
+            api_key=api_key,
+            http_options=genai_types.HttpOptions(timeout=15000),
+        )
+        # Default to Flash-Lite as primary: Flash has had intermittent
+        # multi-minute unavailability on the free tier, and Lite's lower
+        # latency + more generous quota is a better default for a demo.
+        # Override with GEMINI_LLM_MODEL=gemini-flash-latest when quality
+        # matters more than reliability.
+        self.llm_model_id = os.environ.get('GEMINI_LLM_MODEL', 'gemini-flash-lite-latest')
         self.llm_fallback_model_id = os.environ.get(
-            'GEMINI_LLM_FALLBACK_MODEL', 'gemini-flash-lite-latest'
+            'GEMINI_LLM_FALLBACK_MODEL', 'gemini-flash-latest'
         )
         self.embedding_model_id = os.environ.get('GEMINI_EMBED_MODEL', 'gemini-embedding-001')
         # Native dimension of the embedding model. Handlers use this to size
